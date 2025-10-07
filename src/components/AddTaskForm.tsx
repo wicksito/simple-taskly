@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface AddTaskFormProps {
   onTaskAdded: () => void;
@@ -12,6 +13,7 @@ interface AddTaskFormProps {
 export const AddTaskForm = ({ onTaskAdded }: AddTaskFormProps) => {
   const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,11 +23,20 @@ export const AddTaskForm = ({ onTaskAdded }: AddTaskFormProps) => {
       return;
     }
 
+    if (!user) {
+      toast.error("Você precisa estar logado para adicionar tarefas");
+      return;
+    }
+
     setIsLoading(true);
 
     const { error } = await supabase
       .from("tarefas")
-      .insert([{ descricao: description.trim(), status: "pendente" }]);
+      .insert([{ 
+        descricao: description.trim(), 
+        status: "pendente",
+        user_id: user.id 
+      }]);
 
     setIsLoading(false);
 

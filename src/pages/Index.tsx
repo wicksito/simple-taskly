@@ -3,7 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { AddTaskForm } from "@/components/AddTaskForm";
 import { TaskCard } from "@/components/TaskCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle2, Clock, CheckCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CheckCircle2, Clock, CheckCheck, LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 interface Task {
   id: string;
@@ -15,12 +18,16 @@ interface Task {
 const Index = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { user, signOut } = useAuth();
 
   const fetchTasks = async () => {
+    if (!user) return;
+    
     setIsLoading(true);
     const { data, error } = await supabase
       .from("tarefas")
       .select("*")
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
     if (!error && data) {
@@ -30,8 +37,15 @@ const Index = () => {
   };
 
   useEffect(() => {
-    fetchTasks();
-  }, []);
+    if (user) {
+      fetchTasks();
+    }
+  }, [user]);
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Logout realizado com sucesso!");
+  };
 
   const pendingTasksCount = tasks.filter((task) => task.status === "pendente").length;
   const completedTasksCount = tasks.filter((task) => task.status === "concluida").length;
@@ -58,16 +72,26 @@ const Index = () => {
       {/* Header */}
       <header className="bg-card border-b border-border shadow-sm">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="h-8 w-8 text-primary" />
-            <div>
-              <h1 className="text-3xl font-bold text-foreground font-poppins">
-                Taskly
-              </h1>
-              <p className="text-sm text-muted-foreground font-inter">
-                Organize suas tarefas em segundos
-              </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="h-8 w-8 text-primary" />
+              <div>
+                <h1 className="text-3xl font-bold text-foreground font-poppins">
+                  Taskly
+                </h1>
+                <p className="text-sm text-muted-foreground font-inter">
+                  Organize suas tarefas em segundos
+                </p>
+              </div>
             </div>
+            <Button
+              variant="ghost"
+              onClick={handleSignOut}
+              className="gap-2 hover:bg-destructive/10 hover:text-destructive"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="font-inter">Sair</span>
+            </Button>
           </div>
         </div>
       </header>
