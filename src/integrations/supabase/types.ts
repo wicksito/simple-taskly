@@ -64,10 +64,34 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      user_task_stats: {
+        Row: {
+          email: string | null
+          percentual_concluido: number | null
+          primeira_tarefa: string | null
+          tarefas_concluidas: number | null
+          tarefas_pendentes: number | null
+          total_tarefas: number | null
+          ultima_atualizacao: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      get_user_task_report: {
+        Args: { target_user_id?: string }
+        Returns: {
+          email: string
+          percentual_concluido: number
+          primeira_tarefa: string
+          tarefas_concluidas: number
+          tarefas_pendentes: number
+          total_tarefas: number
+          ultima_atualizacao: string
+          user_id: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
